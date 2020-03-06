@@ -12,7 +12,8 @@ import WebKit
 class ViewController: UIViewController, WKNavigationDelegate {
     var webView: WKWebView!
     var progressView: UIProgressView!
-    var websites = ["developer.apple.com", "apple.com", "hackingwithswift.com"]
+    var websites = [String]()
+    var selectedWebsite = ""
     
     override func loadView() {
         webView = WKWebView()
@@ -23,7 +24,7 @@ class ViewController: UIViewController, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        let url = URL(string: "https://" + websites[0])!
+        let url = URL(string: "https://" + selectedWebsite)!
         webView.load(URLRequest(url: url))
         webView.allowsBackForwardNavigationGestures = true
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
@@ -31,10 +32,12 @@ class ViewController: UIViewController, WKNavigationDelegate {
         progressView = UIProgressView(progressViewStyle: .default)
         progressView.sizeToFit()
         let progressButton = UIBarButtonItem(customView: progressView)
-        let spacer = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
+        let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: webView, action: #selector(webView.reload))
+        let back = UIBarButtonItem(title: "Back", style: .done, target: webView, action: #selector(webView.goBack))
+        let forward = UIBarButtonItem(title: "Forward", style: .done, target: webView, action: #selector(webView.goForward))
         
-        toolbarItems = [progressButton, spacer, refresh]
+        toolbarItems = [progressButton, spacer, refresh, back, forward]
         navigationController?.isToolbarHidden = false
     }
     
@@ -76,7 +79,9 @@ class ViewController: UIViewController, WKNavigationDelegate {
                 }
             }
         }
-        
+        let ac = UIAlertController(title: "Request denied", message: url!.absoluteString + " is blocked.", preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(ac, animated: true)
         decisionHandler(.cancel)
     }
 
